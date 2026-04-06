@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sp.app.mapper.SavingsCalcMapper">
+
+    <!-- 저장 -->
+    <insert id="insertSavingsCalc" parameterType="com.sp.app.domain.dto.SavingsCalcDto">
+        INSERT INTO savings_calc (
+            calc_id, member_id,
+            product_name, monthly_amount, period_months, annual_rate,
+            calc_method, tax_type, tax_rate, income_tax_rate, local_tax_rate,
+            principal, interest_before, pre_tax_amount,
+            income_tax, local_tax, tax_total, final_amount,
+            saved_at
+        ) VALUES (
+            savings_calc_seq.NEXTVAL, #{memberId},
+            #{productName}, #{monthlyAmount}, #{periodMonths}, #{annualRate},
+            #{calcMethod}, #{taxType}, #{taxRate}, #{incomeTaxRate}, #{localTaxRate},
+            #{principal}, #{interestBefore}, #{preTaxAmount},
+            #{incomeTax}, #{localTax}, #{taxTotal}, #{finalAmount},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 회원별 목록 조회 (최신순) -->
+    <select id="listByMember" parameterType="map" resultType="com.sp.app.domain.dto.SavingsCalcDto">
+        SELECT
+            calc_id         calcId,
+            member_id       memberId,
+            product_name    productName,
+            monthly_amount  monthlyAmount,
+            period_months   periodMonths,
+            annual_rate     annualRate,
+            calc_method     calcMethod,
+            tax_type        taxType,
+            tax_rate        taxRate,
+            income_tax_rate incomeTaxRate,
+            local_tax_rate  localTaxRate,
+            principal,
+            interest_before interestBefore,
+            pre_tax_amount  preTaxAmount,
+            income_tax      incomeTax,
+            local_tax       localTax,
+            tax_total       taxTotal,
+            final_amount    finalAmount,
+            TO_CHAR(saved_at, 'YYYY.MM.DD') savedAt
+        FROM savings_calc
+        WHERE member_id = #{memberId}
+        ORDER BY saved_at DESC
+        OFFSET #{offset} ROWS FETCH FIRST #{size} ROWS ONLY
+    </select>
+
+    <!-- 단건 조회 -->
+    <select id="findById" parameterType="long" resultType="com.sp.app.domain.dto.SavingsCalcDto">
+        SELECT
+            calc_id         calcId,
+            member_id       memberId,
+            product_name    productName,
+            monthly_amount  monthlyAmount,
+            period_months   periodMonths,
+            annual_rate     annualRate,
+            calc_method     calcMethod,
+            tax_type        taxType,
+            tax_rate        taxRate,
+            income_tax_rate incomeTaxRate,
+            local_tax_rate  localTaxRate,
+            principal,
+            interest_before interestBefore,
+            pre_tax_amount  preTaxAmount,
+            income_tax      incomeTax,
+            local_tax       localTax,
+            tax_total       taxTotal,
+            final_amount    finalAmount,
+            TO_CHAR(saved_at, 'YYYY.MM.DD') savedAt
+        FROM savings_calc
+        WHERE calc_id = #{calcId}
+    </select>
+
+    <!-- 삭제 (본인 소유만) -->
+    <delete id="deleteSavingsCalc" parameterType="map">
+        DELETE FROM savings_calc
+        WHERE calc_id = #{calcId}
+          AND member_id = #{memberId}
+    </delete>
+
+    <!-- 회원별 저장 개수 -->
+    <select id="countByMember" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM savings_calc
+        WHERE member_id = #{memberId}
+    </select>
+
+</mapper>
